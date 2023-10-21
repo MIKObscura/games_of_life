@@ -3,6 +3,8 @@ Languages done for now:
 * Python
 * Ruby
 * C
+* Kotlin
+* Haskell (kinda)
 
 Due to laziness, the display is only done through text output in console and has a 0 to represent a dead cell and a green X to represent a living cell.  
 # Algorithm

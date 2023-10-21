@@ -1,5 +1,6 @@
 *.out
 *.o
+*.jar
 .ruby-lsp/
 .vscode/
 C/build/
