@@ -43,11 +43,9 @@ initialGeneration :: [Int] -> [Int] -> [Int]
 initialGeneration universe indexes = [if x `elem` indexes then 1 else 0 | x <- [0..(length universe - 1)]]
 
 computeCell :: Int -> [Int] -> Int
-computeCell cell neighbors | cell == 1 && sum neighbors < 2 = 0
-                            | cell == 1 && sum neighbors > 3 = 0
-                            | cell == 0 && sum neighbors == 3 = 1
-                            | cell == 0 && sum neighbors == 2 = 1
-                            | otherwise = cell
+computeCell cell neighbors | sum neighbors == 3 = 1
+                            | sum neighbors == 2 = 1
+                            | otherwise = 0
 
 getNeighbors :: Int -> Int -> Int -> [Int] -> [Int]
 getNeighbors i w h universe = [universe !! (i + 1),

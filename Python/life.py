@@ -42,7 +42,6 @@ def print_universe():
 
 def new_generation():
     births = []
-    deaths = []
 
     for i in range(len(UNIVERSE)):
         if is_edge(i):
@@ -55,15 +54,16 @@ def new_generation():
             UNIVERSE[i + ACTUAL_WIDTH - 1] + \
             UNIVERSE[i - ACTUAL_WIDTH - 1] + \
             UNIVERSE[i - ACTUAL_WIDTH + 1]
-        if UNIVERSE[i] and (living_neighbors < 2 or living_neighbors > 3):
-            deaths.append(i)
-        elif not UNIVERSE[i] and (living_neighbors == 2 or living_neighbors == 3):
+        if living_neighbors == 2 or living_neighbors == 3:
             births.append(i)
 
-    for d in deaths:
-        UNIVERSE[d] = 0
-    for b in births:
-        UNIVERSE[b] = 1
+    for c in range(0, len(UNIVERSE)):
+        if is_edge(c):
+            continue
+        if c in births:
+            UNIVERSE[c] = 1
+        else:
+            UNIVERSE[c] = 0
 
 if __name__=="__main__":
     initial_generation()

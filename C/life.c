@@ -62,11 +62,16 @@ void print_universe(){
     }
 }
 
+int array_contains(int* array, int size, int elem){
+    for(int i = 0; i < size; i++){
+        if(array[i] == elem) return 1;
+    }
+    return 0;
+}
+
 void new_generation(){
     int *births = (int *)calloc(1, sizeof(int));
-    int *deaths = (int *)calloc(1, sizeof(int));
     int births_size = 0;
-    int deaths_size = 0;
     for(int i = 0; i < (ACTUAL_HEIGHT * ACTUAL_WIDTH); i++){
         if(is_edge(i)) continue;
         int living_neighbors = (universe[i + 1] +
@@ -77,25 +82,22 @@ void new_generation(){
             universe[i + ACTUAL_WIDTH - 1] +
             universe[i - ACTUAL_WIDTH - 1] +
             universe[i - ACTUAL_WIDTH + 1]);
-        if(universe[i] && (living_neighbors < 2 || living_neighbors > 3)){
-            deaths[deaths_size] = i;
-            deaths_size++;
-            deaths = reallocarray(deaths, (size_t) deaths_size + 1, sizeof(int));
-        }
-        else if(!universe[i] && (living_neighbors == 2 || living_neighbors == 3)){
+        if(living_neighbors == 2 || living_neighbors == 3){
             births[births_size] = i;
             births_size++;
             births = reallocarray(births, (size_t) births_size + 1, sizeof(int));
         }
     }
-    for(int b = 0; b < births_size; b++){
-        universe[births[b]] = 1;
-    }
-    for(int d = 0; d < deaths_size; d++){
-        universe[deaths[d]] = 0;
+    for(int c = 0; c < (ACTUAL_HEIGHT * ACTUAL_WIDTH); c++){
+        if(is_edge(c)) continue;
+        if(array_contains(births, births_size + 1, c)){
+            universe[c] = 1;
+        }
+        else{
+            universe[c] = 0;
+        }
     }
     free(births);
-    free(deaths);
 }
 
 int main(){

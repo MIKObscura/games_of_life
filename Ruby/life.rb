@@ -48,7 +48,6 @@ def print_universe
 end
 
 def new_generation
-    deaths = []
     births = []
     UNIVERSE.each_with_index do |x, i|
         if is_edge?(i)
@@ -63,17 +62,19 @@ def new_generation
             UNIVERSE[i - ACTUAL_WIDTH - 1] +
             UNIVERSE[i - ACTUAL_WIDTH + 1]
 
-        if x && (living_neighbors < 2 || living_neighbors > 3)
-            deaths += [i]
-        elsif !x && (living_neighbors == 2 || living_neighbors == 3)
+        if living_neighbors == 2 || living_neighbors == 3
             births += [i]
         end
     end
-    deaths.each do |d|
-        UNIVERSE[d] = 0
-    end
-    births.each do |b|
-        UNIVERSE[b] = 1
+    UNIVERSE.each_with_index do |x, i|
+        if is_edge?(i)
+            next
+        end
+        if births.include? i
+            UNIVERSE[i] = 1
+        else
+            UNIVERSE[i] = 0
+        end
     end
 end
 

@@ -22,7 +22,6 @@ fun initial_generation(universe: Array<Int>, initial_lives: Int, width: Int, hei
 
 fun new_generation(universe: Array<Int>, width: Int, height: Int){
     var births: MutableList<Int> = mutableListOf()
-    var deaths: MutableList<Int> = mutableListOf()
 
     for(i in universe.indices){
         if(is_edge(i, width + 2, height + 2)) continue
@@ -34,19 +33,15 @@ fun new_generation(universe: Array<Int>, width: Int, height: Int){
             universe[i + (width + 1)] +
             universe[i - (width + 3)] +
             universe[i - (width + 1)]
-        if(universe[i] == 1 && (living_neighbors < 2 || living_neighbors > 3)){
-            deaths.add(i)
-        }
-        if(universe[i] == 0 && (living_neighbors == 2 || living_neighbors == 3)){
+        if(living_neighbors == 2 || living_neighbors == 3){
             births.add(i)
         }
 
-        for(d in deaths){
-            universe[d] = 0
-        }
-        for(b in births){
-            universe[b] = 1
-        }
+    }
+    for(c in universe.indices){
+        if(is_edge(c, width + 2, height + 2)) continue
+        if(births.contains(c)) universe[c] = 1
+        else universe[c] = 0
     }
 }
 
