@@ -52,4 +52,4 @@ Then, after adding the neighbors together, one of 2 things can happen
 * if the cell is alive and has less than 2 or more than 3 neighbors, the cell dies
 * if the cell is dead and has 2 or 3 living neighbors, the cell births
 * in any other case, nothing happens  
-Each cell that dies or births is put into an array that well later be used to apply the changes to the universe. Afterwards the cycle repeats.
+This can be simplified as: if a cell has two or three living neighbors, it lives, otherwise it dies.
