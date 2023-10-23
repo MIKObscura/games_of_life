@@ -1,6 +1,10 @@
 import Control.Concurrent
-import Control.Monad
 import System.Process
+import System.Random
+import Data.Array.ST
+import Control.Monad
+import Control.Monad.ST
+import Data.STRef
 
 createUniverse :: Int -> Int -> [Int]
 createUniverse w h = [0 | x <- [0..((w + 2) * (h + 2))]]
@@ -10,6 +14,30 @@ isEdge i w h = i < (w + 1)
             || i > ((w + 2) * (h + 2) - (w + 2))
             || (i `mod` (w + 2)) == 0
             || ((i + 1) `mod` (w + 2)) == 0
+
+shuffle' :: [a] -> StdGen -> ([a],StdGen)
+shuffle' xs gen = runST (do
+        g <- newSTRef gen
+        let randomRST lohi = do
+                (a,s') <- liftM (randomR lohi) (readSTRef g)
+                writeSTRef g s'
+                return a
+        ar <- newArray n xs
+        xs' <- forM [1..n] $ \i -> do
+                j <- randomRST (i,n)
+                vi <- readArray ar i
+                vj <- readArray ar j
+                writeArray ar j vi
+                return vj
+        gen' <- readSTRef g
+        return (xs',gen'))
+    where
+        n = length xs
+        newArray :: Int -> [a] -> ST s (STArray s Int a)
+        newArray n = newListArray (1,n)
+
+generateInitialLives :: Int -> [Int] -> [Int]
+generateInitialLives amount availableTiles = take amount (fst (shuffle' availableTiles (mkStdGen 69)))
 
 initialGeneration :: [Int] -> [Int] -> [Int]
 initialGeneration universe indexes = [if x `elem` indexes then 1 else 0 | x <- [0..(length universe - 1)]]
@@ -24,12 +52,12 @@ computeCell cell neighbors | cell == 1 && sum neighbors < 2 = 0
 getNeighbors :: Int -> Int -> Int -> [Int] -> [Int]
 getNeighbors i w h universe = [universe !! (i + 1),
                                 universe !! (i - 1),
-                                universe !! i - (w + 1),
-                                universe !! i - (w + 2),
-                                universe !! i - (w + 3),
-                                universe !! i + (w + 1),
-                                universe !! i + (w + 2),
-                                universe !! i + (w + 3)]
+                                universe !! (i - (w + 1)),
+                                universe !! (i - (w + 2)),
+                                universe !! (i - (w + 3)),
+                                universe !! (i + (w + 1)),
+                                universe !! (i + (w + 2)),
+                                universe !! (i + (w + 3))]
 
 newGeneration :: [Int] -> Int -> Int -> [Int]
 newGeneration universe w h = [if isEdge x w h then 0 else computeCell (universe !! x) (getNeighbors x w h universe)
@@ -49,6 +77,6 @@ mainLoop u w h = do
 
 main = do
     let emptyUniverse = createUniverse 40 40
-    let initialLivings = [622, 85, 1036, 1372, 1619, 298, 645, 425, 1177, 1073, 670, 1121, 104, 1482, 1223, 791, 1067, 569, 1234, 1051, 1107, 108, 750, 1488, 1661, 1648, 448, 94, 691, 624, 96, 160, 86, 196, 1135, 81, 911, 1077, 1349, 711, 70, 953, 1467, 129, 1043, 862, 1341, 842, 1337, 830, 1464, 1431, 392, 90, 1687, 407, 1014, 389, 949, 1412, 553, 235, 197, 1140, 706, 270, 1244, 1671, 340, 1307, 918, 1000, 1161, 1624, 1074, 1691, 436, 1401, 272, 150, 1392, 559, 1474, 1156, 1676, 130, 1005, 1654, 1717, 610, 639, 244, 550, 651, 214, 1684, 1718, 695, 424, 63, 1216, 1712, 360, 1094, 1299, 973, 841, 1332, 1079, 1281, 532, 453, 103, 1243, 1345, 527, 232, 1149, 617, 877, 533, 269, 943, 716, 1194, 851, 939, 501, 418, 280, 929, 107, 1397, 514, 724, 614, 976, 1316, 78, 854, 1298, 591, 301, 758, 282, 1440, 1184, 399, 1220, 255, 1424, 528, 53, 1429, 602, 1028, 320, 715, 1182, 169, 112, 1555, 178, 59, 1551, 936, 299, 171, 656, 1658, 403, 515, 264, 910, 332, 1193, 982, 329, 395, 1031, 1581, 658, 375, 909, 123, 1422, 1178, 1291, 444, 1558, 721, 970, 1550, 177, 1214, 1105, 203, 1621, 1326, 1283, 263, 1584, 517, 230, 673, 811, 1351, 945, 889, 1563, 1480, 1263, 1013, 1399, 302, 1457, 1476, 800, 555, 1131, 1241, 1148, 350, 1325, 1534, 1381, 1420, 457, 152, 75, 919, 518, 256, 823, 367, 549, 1118, 1280, 102, 1444, 166, 1361, 1071, 338, 1404, 764, 981, 496, 1009, 1559, 1394, 846, 493, 246, 226, 194, 333, 860, 1282, 836, 1065, 1507, 1305, 971, 1172, 1279, 121, 234, 381, 701, 699, 1527, 668, 692, 366, 1716, 1016, 856, 1082, 1538, 818, 866, 705, 826, 331, 1395, 1089, 1549, 1056, 199, 146, 543, 845, 1396, 782, 538, 754, 1597, 1101, 771, 703, 153, 1063, 370, 383, 181, 1610, 1037, 357, 712, 164, 751, 599, 265, 489, 1568, 636, 843, 541, 1421, 1017, 689, 1682, 1256, 1452, 376, 488, 1360, 1284, 907, 849, 205, 190, 249, 1505, 412, 1670, 1166, 955, 1190, 902, 770, 1294, 206, 1035, 1411, 323, 1521, 649, 1237, 1530, 967, 1593, 351, 261, 1070, 766, 1191, 684, 1489, 1236, 1423, 342, 122, 1274, 124, 1213, 509, 95, 667, 1162, 1195, 1187, 1304, 1371, 962, 1099, 469, 289, 1598, 540, 1130, 258, 1388, 442, 1623, 880, 408, 1639, 582, 1221, 385, 601, 287, 44, 172, 681, 1573, 722, 285, 337, 1450, 615, 204, 473, 1229, 1313, 905, 430, 525, 1719, 427, 659, 819, 1627, 542, 1614, 1430, 397, 1103, 451, 1124, 762, 508, 1226, 522, 1516, 987, 1348, 321, 835, 951, 303, 1587, 950, 562, 343, 799, 1606, 349, 1027, 1055, 1168, 1096, 346, 937, 1123, 1039, 239, 513, 1666, 297, 1384, 1238, 1002, 1286, 947, 827, 794, 745, 1295, 1336, 1080, 1455, 1180, 1285, 1138, 1651, 117, 76, 1380, 1442, 201, 1097, 616, 380, 551, 245, 211, 1207, 578, 1042, 934, 1569, 638, 1536, 88, 1473, 584, 1664, 1477, 162, 568, 372, 1205, 718, 1510, 46, 732, 778]
+    let initialLivings = generateInitialLives 400 [x | x <- [0..length emptyUniverse - 1], not (isEdge x 40 40)]
     let universe = initialGeneration emptyUniverse initialLivings
     mainLoop universe 40 40
